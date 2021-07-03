@@ -98,36 +98,35 @@ async function run() {
 
     // check version update
     if (core.getInput("only-return-version") === "false") {
-      octokit.repos
-        .getContent({
-          owner: repositoryOwner,
-          repo: repositoryName,
-          path: fileToCheck,
-          ref: targetBranch,
-          headers: { Accept: "application/vnd.github.v3.raw" },
-        })
-        .then(response => {
-          // get target project version
-          const targetBranchFileContent = response.data;
-          const targetProjectVersion = getProjectVersion(
-            targetBranchFileContent,
-            fileToCheck,
-          );
+      try {
+        const { data: targetBranchFileContent } =
+          await octokit.rest.repos.getContent({
+            owner: repositoryOwner,
+            repo: repositoryName,
+            path: fileToCheck,
+            ref: targetBranch,
+            headers: { Accept: "application/vnd.github.v3+json" },
+          });
 
-          checkVersionUpdate(
-            targetProjectVersion,
-            updatedProjectVersion,
-            additionalFilesToCheck,
-          );
-        })
-        .catch(error =>
-          console.log(
-            "Cannot resolve `" +
-              fileToCheck +
-              "` in target branch! No version check required. ErrMsg => " +
-              error,
-          ),
+        // get target project version
+        const targetProjectVersion = getProjectVersion(
+          targetBranchFileContent,
+          fileToCheck,
         );
+
+        checkVersionUpdate(
+          targetProjectVersion,
+          updatedProjectVersion,
+          additionalFilesToCheck,
+        );
+      } catch (error) {
+        console.log(
+          "Cannot resolve `" +
+            fileToCheck +
+            "` in target branch! No version check required. ErrMsg => " +
+            error,
+        );
+      }
     }
 
     // set output
