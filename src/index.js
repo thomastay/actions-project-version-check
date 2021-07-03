@@ -64,7 +64,7 @@ function checkVersionUpdate(
 async function run() {
   try {
     // setup objects
-    const octokit = new github.getOctokit(core.getInput("token"));
+    const octokit = github.getOctokit(core.getInput("token"));
 
     // get repository owner and name
     const repository = process.env.GITHUB_REPOSITORY.split("/");
