@@ -36,7 +36,7 @@ function checkVersionUpdate(
   branchVersion,
   additionalFilesToCheck,
 ) {
-  console.log("targetVersion: " + targetVersion);
+  console.log("targetVerrsion: " + targetVersion);
   console.log("branchVersion: " + branchVersion);
 
   let result;
