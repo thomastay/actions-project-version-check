@@ -5980,15 +5980,15 @@ var path = require("path");
 var semverDiff = require_semver_diff();
 var process2 = require("process");
 var repositoryLocalWorkspace = process2.env.GITHUB_WORKSPACE;
-function getProjectVersionFromPackageJsonFile(fileContent, fromOnline = false) {
-  return fromOnline ? fileContent.version : JSON.parse(fileContent).version;
+function getProjectVersionFromPackageJsonFile(fileContent) {
+  return JSON.parse(fileContent).version;
 }
-function getProjectVersion(fileContent, fileName, fromOnline = false) {
+function getProjectVersion(fileContent, fileName) {
   if (fileName === "pom.xml") {
     throw new Error("XML files are unsupported in this fork");
   }
   if (fileName === "package.json") {
-    return getProjectVersionFromPackageJsonFile(fileContent, fromOnline);
+    return getProjectVersionFromPackageJsonFile(fileContent);
   }
   if (fileName === "version.txt") {
     return new String(fileContent).trim();
@@ -6034,10 +6034,10 @@ async function run() {
           repo: repositoryName,
           path: fileToCheck,
           ref: targetBranch,
-          headers: { Accept: "application/vnd.github.v3+json" }
+          headers: { Accept: "application/vnd.github.v3.raw" }
         });
         console.log(JSON.stringify(targetBranchFileContent));
-        const targetProjectVersion = getProjectVersion(targetBranchFileContent, fileToCheck, true);
+        const targetProjectVersion = getProjectVersion(targetBranchFileContent, fileToCheck);
         checkVersionUpdate(targetProjectVersion, updatedProjectVersion, additionalFilesToCheck);
       } catch (error) {
         console.error(`Found error, no version check required. 
