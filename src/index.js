@@ -76,9 +76,7 @@ async function run() {
 
     // get additional files with updated project version
     let additionalFilesToCheck = core.getInput("additional-files-to-check");
-    additionalFilesToCheck =
-      additionalFilesToCheck !== "" ? additionalFilesToCheck : undefined;
-    if (additionalFilesToCheck != null) {
+    if (additionalFilesToCheck !== "") {
       additionalFilesToCheck = additionalFilesToCheck.split(",");
     }
 
