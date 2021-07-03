@@ -6009,7 +6009,7 @@ function checkVersionUpdate(targetVersion, branchVersion, additionalFilesToCheck
   }
   if (!result) {
     core.setFailed("You have to update the project version!");
-  } else if (additionalFilesToCheck != null) {
+  } else if (additionalFilesToCheck) {
     additionalFilesToCheck.forEach((file) => {
       const fileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, file.trim()));
       if (!fileContent.includes(branchVersion) || fileContent.includes(targetVersion)) {
@@ -6026,7 +6026,7 @@ async function run() {
     const repositoryName = repository[1];
     const fileToCheck = core.getInput("file-to-check");
     let additionalFilesToCheck = core.getInput("additional-files-to-check");
-    if (additionalFilesToCheck !== "") {
+    if (additionalFilesToCheck) {
       additionalFilesToCheck = additionalFilesToCheck.split(",");
     }
     const event = JSON.parse(fs.readFileSync(process2.env.GITHUB_EVENT_PATH, "utf8"));
