@@ -81,7 +81,9 @@ async function run() {
     }
 
     // get target branch
-    const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH));
+    const event = JSON.parse(
+      fs.readFileSync(process.env.GITHUB_EVENT_PATH).toString(),
+    );
     const targetBranch =
       event && event.pull_request && event.pull_request.base
         ? event.pull_request.base.ref
