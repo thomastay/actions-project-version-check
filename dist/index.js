@@ -6036,6 +6036,7 @@ async function run() {
           ref: targetBranch,
           headers: { Accept: "application/vnd.github.v3+json" }
         });
+        console.log(JSON.stringify(targetBranchFileContent));
         const targetProjectVersion = getProjectVersion(targetBranchFileContent, fileToCheck, true);
         checkVersionUpdate(targetProjectVersion, updatedProjectVersion, additionalFilesToCheck);
       } catch (error) {
