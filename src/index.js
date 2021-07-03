@@ -16,7 +16,7 @@ function getProjectVersion(fileContent, fileName) {
   }
 
   if (fileName === "package.json") {
-    return fileContent; // we asked for json, so we get back json
+    return fileContent.version; // we asked for json, so we get back json
   }
 
   if (fileName === "version.txt") {

@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint src/index.js",
     "package": "esbuild src/index.js --bundle --platform=node --target=node12 --outfile=dist/index.js",
-    "test": "eslint src/index.js && jest"
+    "test": "eslint src/index.js && jest",
+    "watch": "watchexec -w src -e js 'esbuild src/index.js --bundle --platform=node --target=node12 --outfile=dist/index.js'"
   },
   "repository": {
     "type": "git",

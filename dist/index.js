@@ -5985,7 +5985,7 @@ function getProjectVersion(fileContent, fileName) {
     throw new Error("XML files are unsupported");
   }
   if (fileName === "package.json") {
-    return fileContent;
+    return fileContent.version;
   }
   if (fileName === "version.txt") {
     return new String(fileContent).trim();
