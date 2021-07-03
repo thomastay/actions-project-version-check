@@ -50,7 +50,7 @@ function checkVersionUpdate(
 
   if (!result) {
     core.setFailed("You have to update the project version!");
-  } else if (!additionalFilesToCheck) {
+  } else if (additionalFilesToCheck) {
     additionalFilesToCheck.forEach(file => {
       const fileContent = fs.readFileSync(
         path.resolve(repositoryLocalWorkspace, file.trim()),

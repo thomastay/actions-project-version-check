@@ -6009,7 +6009,7 @@ function checkVersionUpdate(targetVersion, branchVersion, additionalFilesToCheck
   }
   if (!result) {
     core.setFailed("You have to update the project version!");
-  } else if (!additionalFilesToCheck) {
+  } else if (additionalFilesToCheck) {
     additionalFilesToCheck.forEach((file) => {
       const fileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, file.trim()));
       if (!fileContent.includes(branchVersion) || fileContent.includes(targetVersion)) {
