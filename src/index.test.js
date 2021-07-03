@@ -15,26 +15,6 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-test("testGetProjectVersionFromPackageJsonFile", async () => {
-  const result = Index.getProjectVersionFromPackageJsonFile(
-    '{"version":"1.0.0"}',
-  );
-  expect(result).toBe("1.0.0");
-
-  const fileContent = fs.readFileSync(".jest/package.json");
-  const result2 = Index.getProjectVersionFromPackageJsonFile(fileContent);
-  expect(result2).toBe("1.0.0");
-});
-
-test("testGetProjectVersionWithPackageJsonFile", async () => {
-  const result = Index.getProjectVersion('{"version":"1.0.0"}', "package.json");
-  expect(result).toBe("1.0.0");
-
-  const fileContent = fs.readFileSync(".jest/package.json");
-  const result2 = Index.getProjectVersion(fileContent, "package.json");
-  expect(result2).toBe("1.0.0");
-});
-
 test("testGetProjectVersionWithTxtFile", async () => {
   const result = Index.getProjectVersion("1.0.0", "version.txt");
   expect(result).toBe("1.0.0");

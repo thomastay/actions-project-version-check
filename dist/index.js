@@ -5980,15 +5980,12 @@ var path = require("path");
 var semverDiff = require_semver_diff();
 var process2 = require("process");
 var repositoryLocalWorkspace = process2.env.GITHUB_WORKSPACE;
-function getProjectVersionFromPackageJsonFile(fileContent) {
-  return JSON.parse(fileContent).version;
-}
 function getProjectVersion(fileContent, fileName) {
   if (fileName === "pom.xml") {
     throw new Error("XML files are unsupported");
   }
   if (fileName === "package.json") {
-    return getProjectVersionFromPackageJsonFile(fileContent);
+    return fileContent;
   }
   if (fileName === "version.txt") {
     return new String(fileContent).trim();
@@ -6055,7 +6052,6 @@ if (typeof require !== "undefined" && require.main === module) {
 }
 module.exports = {
   getProjectVersion,
-  getProjectVersionFromPackageJsonFile,
   checkVersionUpdate
 };
 /*!

@@ -10,17 +10,13 @@ const process = require("process");
 const repositoryLocalWorkspace = process.env.GITHUB_WORKSPACE;
 
 // helper functions
-function getProjectVersionFromPackageJsonFile(fileContent) {
-  return JSON.parse(fileContent).version;
-}
-
 function getProjectVersion(fileContent, fileName) {
   if (fileName === "pom.xml") {
     throw new Error("XML files are unsupported");
   }
 
   if (fileName === "package.json") {
-    return getProjectVersionFromPackageJsonFile(fileContent);
+    return fileContent; // we asked for json, so we get back json
   }
 
   if (fileName === "version.txt") {
@@ -148,6 +144,5 @@ if (typeof require !== "undefined" && require.main === module) {
 // exports for unit testing
 module.exports = {
   getProjectVersion,
-  getProjectVersionFromPackageJsonFile,
   checkVersionUpdate,
 };
