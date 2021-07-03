@@ -1,8 +1,15 @@
+# Changelog
+
+This repo is a vendored fork of [https://github.com/avides/actions-project-version-check](https://github.com/avides/actions-project-version-check). Main changes are:
+
+1. Removal of XML parser to reduce dependencies
+2. upgrade dependencies and lint rules.
+
 # actions-project-version-check
 
 This action checks if the project version has been updated in your pull request. The action will request the file content (file with name from environment variable `file-to-check`) from the pull request target branch and parse the project version. After that the local project version will be checked against the targets one with [semver-diff](https://www.npmjs.com/package/semver-diff). If the new version is not higher than the old one from target, the action fails.
 
-Currently supported are `pom.xml`, `package.json` and `version.txt`.
+Currently supported are `package.json` and `version.txt`.
 
 ## Inputs
 
@@ -27,6 +34,7 @@ Is used to disable the whole version check and only return the project version a
 ### `version`
 
 If the version update is valid then the new version is available as output. Usage:
+
 ```
 - uses: avides/actions-project-version-check@latest
   id: actions_project_version_check
@@ -39,6 +47,7 @@ If the version update is valid then the new version is available as output. Usag
 ```
 
 ## Example usage
+
 ```
 - uses: avides/actions-project-version-check@v1.2.0
 - with:

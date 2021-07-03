@@ -1,13 +1,12 @@
 {
   "name": "actions-project-version-check",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "GitHub Action that checks if the project version has been updated",
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint src/index.js",
-    "package": "ncc build src/index.js --minify",
-    "test": "eslint src/index.js && jest",
-    "packageAndAddToCommit": "ncc build src/index.js --minify && git add dist/index.js"
+    "package": "esbuild src/index.js --bundle --platform=node --outfile=dist/index.js",
+    "test": "eslint src/index.js && jest"
   },
   "repository": {
     "type": "git",
@@ -25,18 +24,14 @@
   },
   "homepage": "https://github.com/avides/actions-project-version-check#readme",
   "dependencies": {
-    "@actions/core": "^1.2.6",
-    "@actions/github": "^4.0.0",
-    "semver-diff": "^3.1.1",
-    "xml2js": "^0.4.23"
+    "@actions/core": "^1.4.0",
+    "@actions/github": "^5.0.0",
+    "semver-diff": "^3.1.1"
   },
   "devDependencies": {
-    "@zeit/ncc": "^0.20.5",
-    "eslint": "^7.7.0",
-    "jest": "^26.4.2",
-    "pre-commit": "^1.2.2"
-  },
-  "pre-commit": [
-    "packageAndAddToCommit"
-  ]
+    "esbuild": "^0.12.14",
+    "eslint": "^7.30.0",
+    "jest": "^27.0.6",
+    "prettier": "^2.3.2"
+  }
 }
