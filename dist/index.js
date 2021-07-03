@@ -6013,7 +6013,7 @@ function checkVersionUpdate(targetVersion, branchVersion, additionalFilesToCheck
 }
 async function run() {
   try {
-    const octokit = new github.getOctokit(core.getInput("token"));
+    const octokit = github.getOctokit(core.getInput("token"));
     const repository = process2.env.GITHUB_REPOSITORY.split("/");
     const repositoryOwner = repository[0];
     const repositoryName = repository[1];
@@ -6027,17 +6027,19 @@ async function run() {
     const updatedBranchFileContent = fs.readFileSync(repositoryLocalWorkspace + fileToCheck);
     const updatedProjectVersion = getProjectVersion(updatedBranchFileContent, fileToCheck);
     if (core.getInput("only-return-version") === "false") {
-      octokit.repos.getContent({
-        owner: repositoryOwner,
-        repo: repositoryName,
-        path: fileToCheck,
-        ref: targetBranch,
-        headers: { Accept: "application/vnd.github.v3.raw" }
-      }).then((response) => {
-        const targetBranchFileContent = response.data;
+      try {
+        const { data: targetBranchFileContent } = await octokit.rest.repos.getContent({
+          owner: repositoryOwner,
+          repo: repositoryName,
+          path: fileToCheck,
+          ref: targetBranch,
+          headers: { Accept: "application/vnd.github.v3+json" }
+        });
         const targetProjectVersion = getProjectVersion(targetBranchFileContent, fileToCheck);
         checkVersionUpdate(targetProjectVersion, updatedProjectVersion, additionalFilesToCheck);
-      }).catch((error) => console.log("Cannot resolve `" + fileToCheck + "` in target branch! No version check required. ErrMsg => " + error));
+      } catch (error) {
+        console.log("Cannot resolve `" + fileToCheck + "` in target branch! No version check required. ErrMsg => " + error);
+      }
     }
     core.setOutput("version", updatedProjectVersion);
   } catch (error) {
