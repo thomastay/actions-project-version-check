@@ -1,25 +1,30 @@
 name: review
- 
+
 on:
+  push:
+    branches: [master]
   pull_request:
     types: [opened, synchronize]
- 
+
 jobs:
   review:
     timeout-minutes: 30
     runs-on: ubuntu-latest
- 
+
     steps:
-      - name: checkout 
-        uses: actions/checkout@v1
- 
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+          with:
+            node-version: "16"
+
       - name: project-version-check (integration-test)
         id: actions_project_version_check
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           file-to-check: package.json
-          additional-files-to-check: README.md
 
       - name: project-version-output-check
         run: |
