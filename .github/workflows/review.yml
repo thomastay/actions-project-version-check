@@ -22,6 +22,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "12"
+          cache: "npm"
 
       - name: project-version-check (integration-test)
         id: actions_project_version_check

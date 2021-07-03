@@ -2,11 +2,12 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 const fs = require("fs");
+const path = require("path");
 const semverDiff = require("semver-diff");
 const process = require("process");
 
 // constants
-const repositoryLocalWorkspace = process.env.GITHUB_WORKSPACE + "/";
+const repositoryLocalWorkspace = process.env.GITHUB_WORKSPACE;
 
 // helper functions
 function getProjectVersionFromPackageJsonFile(fileContent) {
@@ -45,7 +46,7 @@ function checkVersionUpdate(
   } else if (additionalFilesToCheck != null) {
     additionalFilesToCheck.forEach(file => {
       const fileContent = fs.readFileSync(
-        repositoryLocalWorkspace + file.trim(),
+        path.resolve(repositoryLocalWorkspace, file.trim()),
       );
 
       if (
@@ -91,7 +92,8 @@ async function run() {
 
     // get updated project version
     const updatedBranchFileContent = fs.readFileSync(
-      repositoryLocalWorkspace + fileToCheck,
+      path.resolve(repositoryLocalWorkspace, fileToCheck),
+      "utf8",
     );
     const updatedProjectVersion = getProjectVersion(
       updatedBranchFileContent,
@@ -122,11 +124,11 @@ async function run() {
           additionalFilesToCheck,
         );
       } catch (error) {
-        console.log(
-          "Cannot resolve `" +
-            fileToCheck +
-            "` in target branch! No version check required. ErrMsg => " +
-            error,
+        console.error(
+          `Found error, no version check required. 
+Error message: ${typeof error === "object" ? JSON.stringify(error) : error},
+fileToCheck: ${fileToCheck},
+targetBranch: ${targetBranch}`,
         );
       }
     }

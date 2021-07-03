@@ -244,7 +244,7 @@ var require_core = __commonJS({
     var file_command_1 = require_file_command();
     var utils_1 = require_utils();
     var os = __importStar(require("os"));
-    var path = __importStar(require("path"));
+    var path2 = __importStar(require("path"));
     var ExitCode;
     (function(ExitCode2) {
       ExitCode2[ExitCode2["Success"] = 0] = "Success";
@@ -274,7 +274,7 @@ var require_core = __commonJS({
       } else {
         command_1.issueCommand("add-path", {}, inputPath);
       }
-      process.env["PATH"] = `${inputPath}${path.delimiter}${process.env["PATH"]}`;
+      process.env["PATH"] = `${inputPath}${path2.delimiter}${process.env["PATH"]}`;
     }
     exports2.addPath = addPath;
     function getInput(name, options) {
@@ -387,8 +387,8 @@ var require_context = __commonJS({
           if (fs_1.existsSync(process.env.GITHUB_EVENT_PATH)) {
             this.payload = JSON.parse(fs_1.readFileSync(process.env.GITHUB_EVENT_PATH, { encoding: "utf8" }));
           } else {
-            const path = process.env.GITHUB_EVENT_PATH;
-            process.stdout.write(`GITHUB_EVENT_PATH ${path} does not exist${os_1.EOL}`);
+            const path2 = process.env.GITHUB_EVENT_PATH;
+            process.stdout.write(`GITHUB_EVENT_PATH ${path2} does not exist${os_1.EOL}`);
           }
         }
         this.eventName = process.env.GITHUB_EVENT_NAME;
@@ -5976,9 +5976,10 @@ var require_semver_diff = __commonJS({
 var core = require_core();
 var github = require_github();
 var fs = require("fs");
+var path = require("path");
 var semverDiff = require_semver_diff();
 var process2 = require("process");
-var repositoryLocalWorkspace = process2.env.GITHUB_WORKSPACE + "/";
+var repositoryLocalWorkspace = process2.env.GITHUB_WORKSPACE;
 function getProjectVersionFromPackageJsonFile(fileContent) {
   return JSON.parse(fileContent).version;
 }
@@ -6004,7 +6005,7 @@ function checkVersionUpdate(targetVersion, branchVersion, additionalFilesToCheck
     core.setFailed("You have to update the project version!");
   } else if (additionalFilesToCheck != null) {
     additionalFilesToCheck.forEach((file) => {
-      const fileContent = fs.readFileSync(repositoryLocalWorkspace + file.trim());
+      const fileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, file.trim()));
       if (!fileContent.includes(branchVersion) || fileContent.includes(targetVersion)) {
         core.setFailed('You have to update the project version in "' + file + '"!');
       }
@@ -6022,9 +6023,9 @@ async function run() {
     if (additionalFilesToCheck !== "") {
       additionalFilesToCheck = additionalFilesToCheck.split(",");
     }
-    const event = JSON.parse(fs.readFileSync(process2.env.GITHUB_EVENT_PATH));
+    const event = JSON.parse(fs.readFileSync(process2.env.GITHUB_EVENT_PATH, "utf8"));
     const targetBranch = event && event.pull_request && event.pull_request.base ? event.pull_request.base.ref : "master";
-    const updatedBranchFileContent = fs.readFileSync(repositoryLocalWorkspace + fileToCheck);
+    const updatedBranchFileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, fileToCheck), "utf8");
     const updatedProjectVersion = getProjectVersion(updatedBranchFileContent, fileToCheck);
     if (core.getInput("only-return-version") === "false") {
       try {
@@ -6038,7 +6039,10 @@ async function run() {
         const targetProjectVersion = getProjectVersion(targetBranchFileContent, fileToCheck);
         checkVersionUpdate(targetProjectVersion, updatedProjectVersion, additionalFilesToCheck);
       } catch (error) {
-        console.log("Cannot resolve `" + fileToCheck + "` in target branch! No version check required. ErrMsg => " + error);
+        console.error(`Found error, no version check required. 
+Error message: ${typeof error === "object" ? JSON.stringify(error) : error},
+fileToCheck: ${fileToCheck},
+targetBranch: ${targetBranch}`);
       }
     }
     core.setOutput("version", updatedProjectVersion);
