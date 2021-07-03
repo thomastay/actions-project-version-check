@@ -6040,7 +6040,7 @@ async function run() {
         checkVersionUpdate(targetProjectVersion, updatedProjectVersion, additionalFilesToCheck);
       } catch (error) {
         console.error(`Found error, no version check required. 
-Error message: ${typeof error === "object" ? JSON.stringify(error) : error},
+Error message: ${error},
 fileToCheck: ${fileToCheck},
 targetBranch: ${targetBranch}`);
       }

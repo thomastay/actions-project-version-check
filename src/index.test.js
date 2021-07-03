@@ -1,6 +1,7 @@
 const Index = require("./index");
 const core = require("@actions/core");
 const fs = require("fs");
+const path = require("path");
 
 beforeEach(() => {
   // setup mock
@@ -87,7 +88,9 @@ it("testCheckVersionUpdateWithVersionIsUpdatedAndAdditionalFilesGivenButNotUpdat
   Index.checkVersionUpdate("1.0.0", "1.1.0", ["README.md"]);
 
   // verify
-  expect(fs.readFileSync).toHaveBeenCalledWith("test/workspace/README.md");
+  expect(fs.readFileSync).toHaveBeenCalledWith(
+    path.resolve("test/workspace/README.md"),
+  );
   expect(core.setFailed).toHaveBeenCalledWith(
     'You have to update the project version in "README.md"!',
   );
@@ -101,7 +104,9 @@ it("testCheckVersionUpdateWithVersionIsUpdatedAndAdditionalFilesGiven", async ()
   Index.checkVersionUpdate("1.0.0", "1.1.0", ["README.md"]);
 
   // verify
-  expect(fs.readFileSync).toHaveBeenCalledWith("test/workspace/README.md");
+  expect(fs.readFileSync).toHaveBeenCalledWith(
+    path.resolve("test/workspace/README.md"),
+  );
   expect(core.setFailed).not.toHaveBeenCalledWith(
     'You have to update the project version in "README.md"!',
   );
@@ -115,7 +120,9 @@ it("testCheckVersionUpdateWithVersionIsUpdatedAndAdditionalFilesGivenWithSpaceIn
   Index.checkVersionUpdate("1.0.0", "1.1.0", [" README.md"]);
 
   // verify
-  expect(fs.readFileSync).toHaveBeenCalledWith("test/workspace/README.md");
+  expect(fs.readFileSync).toHaveBeenCalledWith(
+    path.resolve("test/workspace/README.md"),
+  );
   expect(core.setFailed).not.toHaveBeenCalledWith(
     'You have to update the project version in "README.md"!',
   );
