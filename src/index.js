@@ -9,14 +9,18 @@ const process = require("process");
 // constants
 const repositoryLocalWorkspace = process.env.GITHUB_WORKSPACE;
 
+function getProjectVersionFromPackageJsonFile(fileContent, fromOnline = false) {
+  return fromOnline ? fileContent.version : JSON.parse(fileContent).version;
+}
+
 // helper functions
-function getProjectVersion(fileContent, fileName) {
+function getProjectVersion(fileContent, fileName, fromOnline = false) {
   if (fileName === "pom.xml") {
-    throw new Error("XML files are unsupported");
+    throw new Error("XML files are unsupported in this fork");
   }
 
   if (fileName === "package.json") {
-    return fileContent.version; // we asked for json, so we get back json
+    return getProjectVersionFromPackageJsonFile(fileContent, fromOnline);
   }
 
   if (fileName === "version.txt") {
@@ -112,6 +116,7 @@ async function run() {
         const targetProjectVersion = getProjectVersion(
           targetBranchFileContent,
           fileToCheck,
+          true,
         );
 
         checkVersionUpdate(
