@@ -36,12 +36,19 @@ function checkVersionUpdate(
   branchVersion,
   additionalFilesToCheck,
 ) {
-  const result = semverDiff(targetVersion, branchVersion);
+  console.log("targetVersion: " + targetVersion);
+  console.log("branchVersion: " + branchVersion);
+
+  let result;
+  try {
+    result = semverDiff(targetVersion, branchVersion);
+    console.log("semverDiff: " + result);
+  } catch (error) {
+    core.setFailed("Error in semverDiff");
+    throw error;
+  }
 
   if (!result) {
-    console.log("targetVersion: " + targetVersion);
-    console.log("branchVersion: " + branchVersion);
-    console.log("semverDiff: " + result);
     core.setFailed("You have to update the project version!");
   } else if (additionalFilesToCheck != null) {
     additionalFilesToCheck.forEach(file => {
@@ -111,7 +118,6 @@ async function run() {
             ref: targetBranch,
             headers: { Accept: "application/vnd.github.v3.raw" },
           });
-        console.log(JSON.stringify(targetBranchFileContent));
 
         // get target project version
         const targetProjectVersion = getProjectVersion(
