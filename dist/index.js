@@ -5980,6 +5980,7 @@ var path = require("path");
 var semverDiff = require_semver_diff();
 var process2 = require("process");
 var repositoryLocalWorkspace = process2.env.GITHUB_WORKSPACE;
+var NO_UPDATE = "no-update";
 function getProjectVersionFromPackageJsonFile(fileContent) {
   return JSON.parse(fileContent).version;
 }
@@ -5993,32 +5994,44 @@ function getProjectVersion(fileContent, fileName) {
   if (fileName === "version.txt") {
     return new String(fileContent).trim();
   }
-  core.setFailed('"' + fileName + '" is not supported!');
-  return void 0;
+  throw new Error(`"${fileName}" is not supported!`);
 }
 function checkVersionUpdate(targetVersion, branchVersion, additionalFilesToCheck) {
-  console.log("targetVersion: " + targetVersion);
-  console.log("branchVersion: " + branchVersion);
-  let result;
-  try {
-    result = semverDiff(targetVersion, branchVersion);
-    console.log("semverDiff: " + result);
-  } catch (error) {
-    core.setFailed("Error in semverDiff");
-    throw error;
-  }
+  console.log(`targetVersion: ${targetVersion}`);
+  console.log(`branchVersion: ${branchVersion}`);
+  const result = semverDiff(targetVersion, branchVersion);
+  console.log(`semverDiff: ${result}`);
   if (!result) {
-    core.setFailed("You have to update the project version!");
+    throw new Error("You have to update the project version!");
   } else if (additionalFilesToCheck) {
     additionalFilesToCheck.forEach((file) => {
       const fileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, file.trim()));
       if (!fileContent.includes(branchVersion) || fileContent.includes(targetVersion)) {
-        core.setFailed('You have to update the project version in "' + file + '"!');
+        throw new Error(`You have to update the project version in "${file}"!`);
       }
     });
   }
+  return result;
+}
+async function getProjectVersionFromNetwork(octokit, { repositoryOwner, repositoryName, fileToCheck, targetBranch }) {
+  try {
+    const { data: targetBranchFileContent } = await octokit.rest.repos.getContent({
+      owner: repositoryOwner,
+      repo: repositoryName,
+      path: fileToCheck,
+      ref: targetBranch,
+      headers: { Accept: "application/vnd.github.v3.raw" }
+    });
+    return getProjectVersion(targetBranchFileContent, fileToCheck);
+  } catch (error) {
+    throw new Error(`Found error fetching version check from network. 
+Error message: ${error},
+fileToCheck: ${fileToCheck},
+targetBranch: ${targetBranch}`);
+  }
 }
 async function run() {
+  var _a, _b;
   try {
     const octokit = github.getOctokit(core.getInput("token"));
     const repository = process2.env.GITHUB_REPOSITORY.split("/");
@@ -6030,30 +6043,28 @@ async function run() {
       additionalFilesToCheck = additionalFilesToCheck.split(",");
     }
     const event = JSON.parse(fs.readFileSync(process2.env.GITHUB_EVENT_PATH, "utf8"));
-    const targetBranch = event && event.pull_request && event.pull_request.base ? event.pull_request.base.ref : "master";
+    const targetBranch = ((_b = (_a = event == null ? void 0 : event.pull_request) == null ? void 0 : _a.base) == null ? void 0 : _b.ref) || "master";
     const updatedBranchFileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, fileToCheck), "utf8");
     const updatedProjectVersion = getProjectVersion(updatedBranchFileContent, fileToCheck);
-    if (core.getInput("only-return-version") === "false") {
-      try {
-        const { data: targetBranchFileContent } = await octokit.rest.repos.getContent({
-          owner: repositoryOwner,
-          repo: repositoryName,
-          path: fileToCheck,
-          ref: targetBranch,
-          headers: { Accept: "application/vnd.github.v3.raw" }
-        });
-        const targetProjectVersion = getProjectVersion(targetBranchFileContent, fileToCheck);
-        checkVersionUpdate(targetProjectVersion, updatedProjectVersion, additionalFilesToCheck);
-      } catch (error) {
-        console.error(`Found error, no version check required. 
-Error message: ${error},
-fileToCheck: ${fileToCheck},
-targetBranch: ${targetBranch}`);
+    core.setOutput("version", updatedProjectVersion);
+    const targetProjectVersion = getProjectVersionFromNetwork(octokit, {
+      repositoryOwner,
+      repositoryName,
+      fileToCheck,
+      targetBranch
+    });
+    try {
+      const versionUpdate = checkVersionUpdate(targetProjectVersion, updatedProjectVersion, additionalFilesToCheck);
+      core.setOutput("semver", versionUpdate || NO_UPDATE);
+    } catch (error) {
+      if (core.getInput("fail-build-if-not-bumped") === "true") {
+        core.setFailed(error);
+      } else {
+        console.log(`Found error ${error}, but fail-build-if-not-bumped is not set, continuing.`);
       }
     }
-    core.setOutput("version", updatedProjectVersion);
   } catch (error) {
-    core.setFailed(error.message);
+    core.setFailed(error);
   }
 }
 if (typeof require !== "undefined" && require.main === module) {
