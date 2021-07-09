@@ -19,7 +19,6 @@ inputs:
     required: false
   target-branch:
     description: "The target branch"
-    default: main
     required: true
 
 outputs:

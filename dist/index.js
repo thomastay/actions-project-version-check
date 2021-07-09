@@ -6004,7 +6004,7 @@ function checkVersionUpdate(targetVersion, branchVersion, additionalFilesToCheck
   if (additionalFilesToCheck) {
     for (const file of additionalFilesToCheck) {
       const fileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, file.trim()));
-      if (!fileContent.includes(branchVersion) || fileContent.includes(targetVersion)) {
+      if (!fileContent.includes(branchVersion) && fileContent.includes(targetVersion)) {
         return void 0;
       }
     }

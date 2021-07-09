@@ -56,7 +56,7 @@ function checkVersionUpdate(
       );
 
       if (
-        !fileContent.includes(branchVersion) ||
+        !fileContent.includes(branchVersion) &&
         fileContent.includes(targetVersion)
       ) {
         return undefined;
