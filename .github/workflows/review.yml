@@ -42,7 +42,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           file-to-check: package.json
-          only-return-version: true
+          fail-build-if-not-bumped: false
 
       - name: get-project-version-output-check
         run: |

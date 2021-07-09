@@ -137,7 +137,7 @@ async function run() {
     core.setOutput("version", updatedProjectVersion);
 
     // Get project version from network
-    const targetProjectVersion = getProjectVersionFromNetwork(octokit, {
+    const targetProjectVersion = await getProjectVersionFromNetwork(octokit, {
       repositoryOwner,
       repositoryName,
       fileToCheck,

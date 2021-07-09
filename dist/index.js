@@ -6047,7 +6047,7 @@ async function run() {
     const updatedBranchFileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, fileToCheck), "utf8");
     const updatedProjectVersion = getProjectVersion(updatedBranchFileContent, fileToCheck);
     core.setOutput("version", updatedProjectVersion);
-    const targetProjectVersion = getProjectVersionFromNetwork(octokit, {
+    const targetProjectVersion = await getProjectVersionFromNetwork(octokit, {
       repositoryOwner,
       repositoryName,
       fileToCheck,
