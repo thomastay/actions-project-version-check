@@ -33,37 +33,40 @@ Currently supported are `package.json` and `version.txt`.
 
 **Required** Filename (with path) that must contain the project version update (examples: pom.xml, package.json or version.txt)
 
+### `target-branch`
+
+**Required** The target branch. Must be set.
+
 ### `additional-files-to-check`
 
 Comma separated list of filenames (with path) that must contain the same version as "file-to-check" (examples: README.md, src/file-with-version.txt)
 
-### `only-return-version`
+### `fail-build-if-not-bumped`
 
-Is used to disable the whole version check and only return the project version as output for usage in other actions
+Is used to fail the build if version isn't bumped. defaults to true.
 
 ## Outputs
 
 ### `version`
 
-If the version update is valid then the new version is available as output. Usage:
+If the version update is valid then the new version is available as output.
 
-```
-- uses: avides/actions-project-version-check@latest
-  id: actions_project_version_check
-  with:
-    token: ${{ secrets.GITHUB_TOKEN }}
-    file-to-check: pom.xml
+### `semver`
 
-- name: use-version-from-check
-  run: echo "New version is: " ${{ steps.actions_project_version_check.outputs.version }}
-```
+Returns the output of semver-diff, or "no-output"
 
 ## Example usage
 
 ```
-- uses: avides/actions-project-version-check@v1.2.0
-- with:
+- uses: thomastay/actions-project-version-check@latest
+  id: actions_project_version_check
+  with:
     token: ${{ secrets.GITHUB_TOKEN }}
-    file-to-check: package.json
-    additional-files-to-check: README.md
+    file-to-check: pom.xml
+    target-branch: main
+
+- name: use-version-from-check
+  run: echo "New version is: " ${{ steps.actions_project_version_check.outputs.version }}
+- name: use-semver-from-check
+  run: echo "Semver diff returned: " ${{ steps.actions_project_version_check.outputs.semver }}
 ```
