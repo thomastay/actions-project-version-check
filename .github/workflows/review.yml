@@ -28,6 +28,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           file-to-check: package.json
+          additional-files-to-check: README.md
           target-branch: master
 
       - name: project-version-output-check
