@@ -1,6 +1,6 @@
 # Changelog
 
-This repo is a vendored fork of Main changes are: [https://github.com/avides/actions-project-version-check](https://github.com/avides/actions-project-version-check).
+This repo is a vendored fork of: [https://github.com/avides/actions-project-version-check](https://github.com/avides/actions-project-version-check).
 
 ### v2.0.0
 
