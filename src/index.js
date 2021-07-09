@@ -8,6 +8,7 @@ const process = require("process");
 
 // constants
 const repositoryLocalWorkspace = process.env.GITHUB_WORKSPACE;
+const NO_UPDATE = "no-update";
 
 function getProjectVersionFromPackageJsonFile(fileContent) {
   return JSON.parse(fileContent).version;
@@ -27,44 +28,72 @@ function getProjectVersion(fileContent, fileName) {
     return new String(fileContent).trim();
   }
 
-  core.setFailed('"' + fileName + '" is not supported!');
-  return undefined;
+  throw new Error(`"${fileName}" is not supported!`);
 }
 
+/**
+ * @param {string} targetVersion
+ * @param {string} branchVersion
+ * @param {string[]} additionalFilesToCheck
+ * @returns the result of semverDiff. If there are no changes, semverDiff returns undefined
+ * @throws An error if a failure occurs.
+ */
 function checkVersionUpdate(
   targetVersion,
   branchVersion,
   additionalFilesToCheck,
 ) {
-  console.log("targetVersion: " + targetVersion);
-  console.log("branchVersion: " + branchVersion);
+  console.log(`targetVersion: ${targetVersion}`);
+  console.log(`branchVersion: ${branchVersion}`);
 
-  let result;
-  try {
-    result = semverDiff(targetVersion, branchVersion);
-    console.log("semverDiff: " + result);
-  } catch (error) {
-    core.setFailed("Error in semverDiff");
-    throw error;
-  }
+  const result = semverDiff(targetVersion, branchVersion);
+  console.log(`semverDiff: ${result}`);
 
-  if (!result) {
-    core.setFailed("You have to update the project version!");
-  } else if (additionalFilesToCheck) {
-    additionalFilesToCheck.forEach(file => {
+  if (additionalFilesToCheck) {
+    for (const file of additionalFilesToCheck) {
       const fileContent = fs.readFileSync(
         path.resolve(repositoryLocalWorkspace, file.trim()),
       );
 
       if (
-        !fileContent.includes(branchVersion) ||
+        !fileContent.includes(branchVersion) &&
         fileContent.includes(targetVersion)
       ) {
-        core.setFailed(
-          'You have to update the project version in "' + file + '"!',
-        );
+        return undefined;
       }
-    });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * @returns the project version
+ * @throws
+ */
+async function getProjectVersionFromNetwork(
+  octokit,
+  { repositoryOwner, repositoryName, fileToCheck, targetBranch },
+) {
+  try {
+    const { data: targetBranchFileContent } =
+      await octokit.rest.repos.getContent({
+        owner: repositoryOwner,
+        repo: repositoryName,
+        path: fileToCheck,
+        ref: targetBranch,
+        headers: { Accept: "application/vnd.github.v3.raw" },
+      });
+
+    // get target project version
+    return getProjectVersion(targetBranchFileContent, fileToCheck);
+  } catch (error) {
+    throw new Error(
+      `Found error fetching version check from network. 
+Error message: ${error},
+fileToCheck: ${fileToCheck},
+targetBranch: ${targetBranch}`,
+    );
   }
 }
 
@@ -93,9 +122,12 @@ async function run() {
       fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"),
     );
     const targetBranch =
-      event && event.pull_request && event.pull_request.base
-        ? event.pull_request.base.ref
-        : "master";
+      (event &&
+        event.pull_request &&
+        event.pull_request.base &&
+        event.pull_request.base.ref) ||
+      core.getInput("target-branch") ||
+      "main";
 
     // get updated project version
     const updatedBranchFileContent = fs.readFileSync(
@@ -106,44 +138,36 @@ async function run() {
       updatedBranchFileContent,
       fileToCheck,
     );
+    // set output
+    core.setOutput("version", updatedProjectVersion);
 
-    // check version update
-    if (core.getInput("only-return-version") === "false") {
-      try {
-        const { data: targetBranchFileContent } =
-          await octokit.rest.repos.getContent({
-            owner: repositoryOwner,
-            repo: repositoryName,
-            path: fileToCheck,
-            ref: targetBranch,
-            headers: { Accept: "application/vnd.github.v3.raw" },
-          });
+    // Get project version from network
+    const targetProjectVersion = await getProjectVersionFromNetwork(octokit, {
+      repositoryOwner,
+      repositoryName,
+      fileToCheck,
+      targetBranch,
+    });
 
-        // get target project version
-        const targetProjectVersion = getProjectVersion(
-          targetBranchFileContent,
-          fileToCheck,
-        );
-
-        checkVersionUpdate(
-          targetProjectVersion,
-          updatedProjectVersion,
-          additionalFilesToCheck,
-        );
-      } catch (error) {
-        console.error(
-          `Found error, no version check required. 
-Error message: ${error},
-fileToCheck: ${fileToCheck},
-targetBranch: ${targetBranch}`,
+    // Check for version update
+    try {
+      const versionUpdate = checkVersionUpdate(
+        targetProjectVersion,
+        updatedProjectVersion,
+        additionalFilesToCheck,
+      );
+      core.setOutput("semver", versionUpdate || NO_UPDATE);
+    } catch (error) {
+      if (core.getInput("fail-build-if-not-bumped") === "true") {
+        core.setFailed(error);
+      } else {
+        console.log(
+          `Found error ${error}, but fail-build-if-not-bumped is not set, continuing.`,
         );
       }
     }
-
-    // set output
-    core.setOutput("version", updatedProjectVersion);
   } catch (error) {
-    core.setFailed(error.message);
+    core.setFailed(error);
   }
 }
 

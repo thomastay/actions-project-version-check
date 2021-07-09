@@ -1,6 +1,18 @@
 # Changelog
 
-This repo is a vendored fork of [https://github.com/avides/actions-project-version-check](https://github.com/avides/actions-project-version-check). Main changes are:
+This repo is a vendored fork of Main changes are: [https://github.com/avides/actions-project-version-check](https://github.com/avides/actions-project-version-check).
+
+### v2.0.0
+
+API changes, so major bump
+
+1. target branch now defaults to main, and must be set.
+1. Failure on bump / not is now an explicit flag (fail-build-if-not-bumped). The updated project version and semver result is now always output as a variable.
+1. Additional files now fails only if the branch version isn't there AND the target version is.
+
+### v1.2.2
+
+Compatible with forked version.
 
 1. Removal of XML parser to reduce dependencies
 2. upgrade dependencies and lint rules.

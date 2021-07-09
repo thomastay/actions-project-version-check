@@ -15,7 +15,7 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-test("testGetProjectVersionWithTxtFile", async () => {
+test("testGetProjectVersionWithTxtFile", () => {
   const result = Index.getProjectVersion("1.0.0", "version.txt");
   expect(result).toBe("1.0.0");
 
@@ -24,86 +24,52 @@ test("testGetProjectVersionWithTxtFile", async () => {
   expect(result2).toBe("1.0.0");
 });
 
-test("testGetProjectVersionWithUnsupportedFile", async () => {
-  const result = Index.getProjectVersion("1.0.0", "README.md");
-  expect(result).toBe(undefined);
-  expect(core.setFailed).toHaveBeenCalledWith('"README.md" is not supported!');
+test("testGetProjectVersionWithUnsupportedFile", () => {
+  expect(() => Index.getProjectVersion("1.0.0", "README.md").toThrow());
 });
 
-it("testCheckVersionUpdateWithVersionsAreEqual", async () => {
+it("testCheckVersionUpdateWithVersionsAreEqual", () => {
   // action
-  Index.checkVersionUpdate("1.0.0", "1.0.0", undefined);
-
-  // verify
-  expect(core.setFailed).toHaveBeenCalledWith(
-    "You have to update the project version!",
-  );
+  const result = Index.checkVersionUpdate("1.0.0", "1.0.0", undefined);
+  expect(result).toBeUndefined();
 });
 
-it("testCheckVersionUpdateWithVersionIsDowngraded", async () => {
+it("testCheckVersionUpdateWithVersionIsDowngraded", () => {
   // action
-  Index.checkVersionUpdate("1.0.0", "0.9.0", undefined);
-
-  // verify
-  expect(core.setFailed).toHaveBeenCalledWith(
-    "You have to update the project version!",
-  );
+  const result = Index.checkVersionUpdate("1.0.0", "0.9.0", undefined);
+  expect(result).toBeUndefined();
 });
 
-it("testCheckVersionUpdateWithVersionIsUpdated", async () => {
+it("testCheckVersionUpdateWithVersionIsUpdated", () => {
   // action
-  Index.checkVersionUpdate("1.0.0", "1.1.0", undefined);
-
-  // verify
-  expect(core.setFailed).not.toHaveBeenCalledWith(
-    "You have to update the project version!",
-  );
+  const result = Index.checkVersionUpdate("1.0.0", "1.1.0", undefined);
+  expect(result).toBe("minor");
 });
 
-it("testCheckVersionUpdateWithVersionIsUpdatedAndAdditionalFilesGivenButNotUpdated", async () => {
+it("testCheckVersionUpdateWithVersionIsUpdatedAndAdditionalFilesGivenButNotUpdated", () => {
   // prepare
   fs.readFileSync.mockReturnValue("foo... version: 1.0.0 ...bar");
 
   // action
-  Index.checkVersionUpdate("1.0.0", "1.1.0", ["README.md"]);
+  const result = Index.checkVersionUpdate("1.0.0", "1.1.0", ["README.md"]);
 
   // verify
   expect(fs.readFileSync).toHaveBeenCalledWith(
     path.resolve("test/workspace/README.md"),
   );
-  expect(core.setFailed).toHaveBeenCalledWith(
-    'You have to update the project version in "README.md"!',
-  );
+  expect(result).toBeUndefined();
 });
 
-it("testCheckVersionUpdateWithVersionIsUpdatedAndAdditionalFilesGiven", async () => {
+it("testCheckVersionUpdateWithVersionIsUpdatedAndAdditionalFilesGiven", () => {
   // prepare
   fs.readFileSync.mockReturnValue("foo... version: 1.1.0 ...bar");
 
   // action
-  Index.checkVersionUpdate("1.0.0", "1.1.0", ["README.md"]);
+  const result = Index.checkVersionUpdate("1.0.0", "1.1.0", ["README.md"]);
 
   // verify
   expect(fs.readFileSync).toHaveBeenCalledWith(
     path.resolve("test/workspace/README.md"),
   );
-  expect(core.setFailed).not.toHaveBeenCalledWith(
-    'You have to update the project version in "README.md"!',
-  );
-});
-
-it("testCheckVersionUpdateWithVersionIsUpdatedAndAdditionalFilesGivenWithSpaceInString", async () => {
-  // prepare
-  fs.readFileSync.mockReturnValue("foo... version: 1.1.0 ...bar");
-
-  // action
-  Index.checkVersionUpdate("1.0.0", "1.1.0", [" README.md"]);
-
-  // verify
-  expect(fs.readFileSync).toHaveBeenCalledWith(
-    path.resolve("test/workspace/README.md"),
-  );
-  expect(core.setFailed).not.toHaveBeenCalledWith(
-    'You have to update the project version in "README.md"!',
-  );
+  expect(result).toBe("minor");
 });
