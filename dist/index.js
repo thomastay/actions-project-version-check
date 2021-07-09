@@ -6001,15 +6001,13 @@ function checkVersionUpdate(targetVersion, branchVersion, additionalFilesToCheck
   console.log(`branchVersion: ${branchVersion}`);
   const result = semverDiff(targetVersion, branchVersion);
   console.log(`semverDiff: ${result}`);
-  if (!result) {
-    throw new Error("You have to update the project version!");
-  } else if (additionalFilesToCheck) {
-    additionalFilesToCheck.forEach((file) => {
+  if (additionalFilesToCheck) {
+    for (const file of additionalFilesToCheck) {
       const fileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, file.trim()));
       if (!fileContent.includes(branchVersion) || fileContent.includes(targetVersion)) {
-        throw new Error(`You have to update the project version in "${file}"!`);
+        return void 0;
       }
-    });
+    }
   }
   return result;
 }
