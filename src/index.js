@@ -121,7 +121,13 @@ async function run() {
     const event = JSON.parse(
       fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"),
     );
-    const targetBranch = event?.pull_request?.base?.ref || "master";
+    const targetBranch =
+      (event &&
+        event.pull_request &&
+        event.pull_request.base &&
+        event.pull_request.base.ref) ||
+      core.getInput("target-branch") ||
+      "main";
 
     // get updated project version
     const updatedBranchFileContent = fs.readFileSync(

@@ -17,6 +17,11 @@ inputs:
     description: "Fails the build if not the version is not bumped"
     default: true
     required: false
+  target-branch:
+    description: "The target branch"
+    default: main
+    required: true
+
 outputs:
   semver:
     description: The result of semver-diff

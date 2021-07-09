@@ -6029,7 +6029,6 @@ targetBranch: ${targetBranch}`);
   }
 }
 async function run() {
-  var _a, _b;
   try {
     const octokit = github.getOctokit(core.getInput("token"));
     const repository = process2.env.GITHUB_REPOSITORY.split("/");
@@ -6041,7 +6040,7 @@ async function run() {
       additionalFilesToCheck = additionalFilesToCheck.split(",");
     }
     const event = JSON.parse(fs.readFileSync(process2.env.GITHUB_EVENT_PATH, "utf8"));
-    const targetBranch = ((_b = (_a = event == null ? void 0 : event.pull_request) == null ? void 0 : _a.base) == null ? void 0 : _b.ref) || "master";
+    const targetBranch = event && event.pull_request && event.pull_request.base && event.pull_request.base.ref || core.getInput("target-branch") || "main";
     const updatedBranchFileContent = fs.readFileSync(path.resolve(repositoryLocalWorkspace, fileToCheck), "utf8");
     const updatedProjectVersion = getProjectVersion(updatedBranchFileContent, fileToCheck);
     core.setOutput("version", updatedProjectVersion);
